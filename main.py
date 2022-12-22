@@ -7,7 +7,7 @@ url = "https://goquotes-api.herokuapp.com/api/v1/random?count=1"
 
 ourwords = ["our", "we", "everybody", "everyone", "all of us", "every person", "each and every one", "each one", "each person", "every last one", "one and all", "all and sundry", "the whole world"]
 
-token = "MTAzMjMzNzU5MzIyMTc5MTc3NQ.GujH9k.YSiaybMJY5tVtAWFPYVRuiefdmIeEGQszXrrY4"
+token = open('token.txt').read()
 intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
