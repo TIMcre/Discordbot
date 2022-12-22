@@ -1,47 +1,66 @@
 import discord
-import requests
-import ast  
-import random 
+import youtube_dl
+import os
+import ffmpeg
 
-url = "https://goquotes-api.herokuapp.com/api/v1/random?count=1"
 
-ourwords = ["our", "we", "everybody", "everyone", "all of us", "every person", "each and every one", "each one", "each person", "every last one", "one and all", "all and sundry", "the whole world"]
-
-token = open('token.txt').read()
+# Create the Client object with the intents parameter
 intents = discord.Intents.default()
+intents.members = True
+intents.messages = True
 intents.message_content = True
 client = discord.Client(intents=intents)
-
-def get_text():
-    response = requests.request("GET", url)
-    response = ast.literal_eval(response.text)
-    response = response["quotes"]
-    response = ast.literal_eval(str(response[0]))
-    text = response["text"]
-    author = response["author"]
-    author = f"-{author}"
-    return text, author
+token = open('token.txt').read()
 
 @client.event
 async def on_ready():
-    print(f'We have logged in as {client.user}')
+    print("Logged in as", client.user)
 
 @client.event
 async def on_message(message):
-    if message.author == client.user:
-        return
+    global voice_client
 
-    if message.content == ("!quote"):
-        text = get_text()
-        await message.channel.send(text[0])
-        await message.channel.send(text[1])
+    if message.content.startswith("!join"):
+        # Join the voice channel
+        channel = message.author.voice.channel
+        await channel.connect()
+    
+    elif message.content.startswith("!play"):                      
+        # Split the command and its arguments
+        command, *args = message.content.split()
+        print(command, *args)
+        try:
+            # Get the first argument (the audio source)
+            audio_source = args[0]
+        except:
+            await message.channel.send("couldnt find a audio source")      
+        
+        # Use FFmpeg to play the audio file
+        voice_client = client.voice_clients[0]
+        voice_client.pause()
+        voice_client.play(discord.FFmpegPCMAudio(executable="C:\\ffmpeg\\bin\\ffmpeg.exe", source=audio_source))
+        await message.channel.send("Playing song...")
 
-    if any(word in message.content.lower() for word in ourwords):
-        await message.channel.send("https://tenor.com/view/meme-our-now-gif-21036569")
+    elif message.content.startswith("!pause" or "!p"):
+        try:
+            voice_client.pause()
+            await message.channel.send("pausing")
+        except:
+            await message.channel.send("Unabel to pause")
+
+    elif message.content.startswith("!resume" or "!r"):
+        try:
+            voice_client.resume()
+            await message.channel.send("resuming")
+        except:
+            await message.channel.send("Unabel to resume")
+
+    elif message.content.startswith("!leave"):
+        
+        await voice_client.disconnect()
+        await message.channel.send("left")
+        
 
 
-    #if message.content.lower() == ("haare") or ("bold") or ("hair"):
-    #    await message.channel.send("https://tenor.com/view/jim-carey-hai-hi-hello-bald-gif-4763908")
-  
 
 client.run(token)
