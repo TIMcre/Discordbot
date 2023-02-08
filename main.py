@@ -1,5 +1,4 @@
 import discord
-import youtube_dl
 import os
 import ffmpeg
 
@@ -10,6 +9,9 @@ intents.members = True
 intents.messages = True
 intents.message_content = True
 client = discord.Client(intents=intents)
+cwd = os.getcwd()  # Get the current working directory (cwd)
+files = os.listdir(cwd)  # Get all the files in that directory
+print("Files in %r: %s" % (cwd, files))
 token = open('token.txt').read()
 
 @client.event
@@ -31,9 +33,9 @@ async def on_message(message):
         print(command, *args)
         try:
             # Get the first argument (the audio source)
-            audio_source = args[0]
+            audio_source = str(args[0])
         except:
-            await message.channel.send("couldnt find a audio source")      
+            await message.channel.send("couldnt find a audio source") 
         
         # Use FFmpeg to play the audio file
         voice_client = client.voice_clients[0]
